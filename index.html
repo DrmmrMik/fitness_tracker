@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="color-scheme" content="dark light">
+  <title>AuraFit - Quantum Fitness & Mind Tracker</title>
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="A premium, simple, and quantified fitness tracker for Heavy Duty weightlifting, meditation, and Peloton metrics.">
+  <!-- PWA & Mobile Optimization -->
+  <meta name="theme-color" content="#06b6d4" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#06b6d4" media="(prefers-color-scheme: light)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="AuraFit">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="icons/icon_192.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon_192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icons/icon_512.png">
+  <link rel="mask-icon" href="icons/icon.svg" color="#06b6d4">
+  <!-- Typography & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="assets/style.css">
+  <!-- Chart.js and Lucide Icons -->
+  <script src="assets/chart.umd.js"></script>
+  <script src="assets/lucide.js"></script>
+  <!-- Service Worker Registration (REQUIRED for PWA install on Android) -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('[AuraFit] SW registered:', reg.scope))
+          .catch(err => console.error('[AuraFit] SW registration failed:', err));
+      });
+    }
+  </script>
+
+<script>window.__BUILD_INFO__={stamp:"20260815-203139",ver:"1.0.20260815"};</script>
+</head>
+<body data-build="20260815-203139" data-version="1.0.20260815">
+
+  <!-- App Wrapper -->
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation (Desktop) -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">
+          <i data-lucide="zap"></i>
+        </div>
+        <span class="brand-name">AuraFit</span>
+      </div>
+      <nav class="nav-menu">
+        <a href="#dashboard" class="nav-item active" data-tab="dashboard">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="#bbs" class="nav-item" data-tab="bbs">
+          <i data-lucide="dumbbell"></i>
+          <span>Heavy Duty</span>
+        </a>
+        <a href="#meditation" class="nav-item" data-tab="meditation">
+          <i data-lucide="flower"></i>
+          <span>Meditation</span>
+        </a>
+        <a href="#peloton" class="nav-item" data-tab="peloton">
+          <i data-lucide="bike"></i>
+          <span>Peloton</span>
+        </a>
+        <a href="#analytics" class="nav-item" data-tab="analytics">
+          <i data-lucide="trending-up"></i>
+          <span>Analytics</span>
+        </a>
+        <a href="#settings" class="nav-item" data-tab="settings">
+          <i data-lucide="settings"></i>
+          <span>Settings</span>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <button id="btn-sidebar-install" class="btn btn-outline btn-full hidden" style="margin-bottom: 0.75rem;">
+          <i data-lucide="download"></i> Install App
+        </button>
+        <span class="version-tag">v1.0.0</span>
+      </div>
+    </aside>
+
+    <!-- Main Content Panel -->
+    <main class="main-content">
+      
+      <!-- Top Bar / Header -->
+      <header class="app-header">
+        <div class="header-info">
+          <h1 id="page-title">Dashboard</h1>
+          <p id="page-subtitle" class="text-secondary">Welcome back. Here is your daily quantum fitness check.</p>
+        </div>
+        <div class="header-actions">
+          <button id="btn-header-install" class="btn btn-outline hidden" style="margin-right: 0.75rem; display: inline-flex; align-items: center; gap: 0.5rem; border-color: var(--accent-cyan); color: var(--accent-cyan); font-size: 0.85rem; padding: 0.5rem 0.85rem; border-radius: 8px;">
+            <i data-lucide="download" style="width: 14px; height: 14px;"></i> Install App
+          </button>
+          <div class="date-badge">
+            <i data-lucide="calendar"></i>
+            <span id="current-date-str">Saturday, June 27</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- TAB SECTIONS -->
+      
+      <!-- 1. DASHBOARD TAB -->
+      <section id="tab-dashboard" class="tab-pane active">
+        <!-- Quick Stats Grid -->
+        <div class="stats-grid">
+          <div class="stat-card glass-panel text-cyan">
+            <div class="stat-header">
+              <span>HEAVY DUTY STATE</span>
+              <i data-lucide="calendar-days"></i>
+            </div>
+            <div class="stat-value" id="dash-bbs-last-lift">-</div>
+            <p class="stat-detail" id="dash-bbs-subtext">No lifting logged yet</p>
+            <div class="stat-footer-action">
+              <a href="#bbs" class="stat-action-link text-cyan">
+                <span>Log Lift</span> <i data-lucide="arrow-right"></i>
+              </a>
+            </div>
+          </div>
+          <div class="stat-card glass-panel text-emerald">
+            <div class="stat-header">
+              <span>MEDITATION STREAK</span>
+              <i data-lucide="flame"></i>
+            </div>
+            <div class="stat-value" id="dash-meditation-streak">0 days</div>
+            <p class="stat-detail" id="dash-meditation-subtext">0 total minutes</p>
+            <div class="stat-footer-action">
+              <a href="#meditation" class="stat-action-link text-emerald">
+                <span>Log Meditation</span> <i data-lucide="arrow-right"></i>
+              </a>
+            </div>
+          </div>
+          <div class="stat-card glass-panel text-rose">
+            <div class="stat-header">
+              <span>PELOTON WEEKLY OUTPUT</span>
+              <i data-lucide="activity"></i>
+            </div>
+            <div class="stat-value" id="dash-peloton-weekly">0 kJ</div>
+            <p class="stat-detail" id="dash-peloton-subtext">0 workouts this week</p>
+            <div class="stat-footer-action">
+              <a href="#peloton" class="stat-action-link text-rose">
+                <span>Log Peloton Ride</span> <i data-lucide="arrow-right"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recommendations & Daily Insights -->
+        <div class="dashboard-layouts">
+          <!-- Daily Plan & Heavy Duty Targets -->
+          <div class="glass-panel main-panel">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="sparkles"></i> Recommendations for Next Workout</h2>
+              <span class="badge badge-cyan">Heavy Duty Protocol</span>
+            </div>
+            <div class="recs-container" id="bbs-recs-list">
+              <!-- Dynamically populated BBS advice cards -->
+              <div class="empty-state">
+                <i data-lucide="clipboard-list"></i>
+                <p>Log a weightlifting session or load sample data to unlock progression insights.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Side panels: Peloton PRs & Meditation Target -->
+          <div class="side-panel-group">
+            <!-- Peloton PR Summary -->
+            <div class="glass-panel">
+              <div class="panel-header">
+                <h3 class="panel-title"><i data-lucide="award"></i> Peloton PRs</h3>
+              </div>
+              <div class="pr-compact-list" id="dash-peloton-prs">
+                <!-- Dynamically populated PR records -->
+                <div class="empty-state-mini">No PR records yet</div>
+              </div>
+            </div>
+
+            <!-- Meditation Suggestion -->
+            <div class="glass-panel">
+              <div class="panel-header">
+                <h3 class="panel-title"><i data-lucide="compass"></i> Mind Focus</h3>
+              </div>
+              <div class="mind-focus-card">
+                <p class="meditation-quote">"Quiet the mind and the soul will speak."</p>
+                <div class="focus-progress-wrapper">
+                  <div class="focus-rec-time" id="dash-meditation-rec">Target: 10 min session today</div>
+                  <button class="btn btn-emerald btn-sm" id="btn-dash-start-meditation">
+                    <i data-lucide="play"></i> Start Now
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. BBS WEIGHTLIFTING TAB -->
+      <section id="tab-bbs" class="tab-pane">
+        <div class="workout-dashboard">
+          
+          <!-- Timer Panel (Gym interface) -->
+          <div class="glass-panel exercise-timer-panel">
+            <div class="timer-config">
+              <div class="input-group">
+                <label for="bbs-exercise-select">Select Exercise</label>
+                <select id="bbs-exercise-select" class="form-select">
+                  <option value="Chest Press">Chest Press (Big 5)</option>
+                  <option value="Lat Pulldown">Lat Pulldown (Big 5)</option>
+                  <option value="Overhead Press">Overhead Press (Big 5)</option>
+                  <option value="Seated Row">Seated Row (Big 5)</option>
+                  <option value="Leg Press">Leg Press (Big 5)</option>
+                </select>
+              </div>
+              <div class="timer-quick-info" id="bbs-timer-rec-area">
+                <span class="recommendation-pill" id="bbs-timer-rec-last">Last: -- lbs</span>
+                <span class="recommendation-pill" id="bbs-timer-rec-advice">--</span>
+                <span class="recommendation-pill" id="bbs-timer-rec-tul">Aim TUL: 40-90s</span>
+              </div>
+            </div>
+
+            <!-- Main Interactive Timer Circle -->
+            <div class="timer-display-container">
+              <div class="timer-progress-ring">
+                <!-- Pacing animations/bars will render here dynamically -->
+                <div class="inner-circle">
+                  <span id="bbs-timer-val">00.0</span>
+                  <span class="seconds-label">seconds</span>
+                  <span id="bbs-cadence-text" class="cadence-state-text">Ready</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Timer controls -->
+            <div class="timer-controls">
+              <button class="btn-timer btn-timer-start" id="btn-bbs-timer-toggle">
+                <i data-lucide="play" id="bbs-timer-icon"></i>
+                <span id="bbs-timer-btn-text">Start TUL Timer</span>
+              </button>
+              <button class="btn btn-secondary btn-icon" id="btn-bbs-timer-reset" disabled>
+                <i data-lucide="rotate-ccw"></i>
+              </button>
+            </div>
+
+            <!-- Timer Options / Helpers -->
+            <div class="timer-settings-row">
+              <label class="toggle-switch">
+                <input type="checkbox" id="chk-bbs-cadence" checked>
+                <span class="slider"></span>
+                <span class="toggle-label">Cadence Visualizer (10s/10s)</span>
+              </label>
+              <label class="toggle-switch">
+                <input type="checkbox" id="chk-bbs-sound">
+                <span class="slider"></span>
+                <span class="toggle-label">Cadence Sound Ticks</span>
+              </label>
+            </div>
+            
+            <div class="timer-log-form">
+              <div class="form-row">
+                <div class="input-group">
+                  <label for="bbs-log-weight">Weight (lbs)</label>
+                  <input type="number" id="bbs-log-weight" class="form-input" placeholder="e.g. 150" step="2.5" min="0">
+                </div>
+                <div class="input-group">
+                  <label for="bbs-log-tul">TUL Time (sec)</label>
+                  <input type="number" id="bbs-log-tul" class="form-input" placeholder="e.g. 60" step="0.1" min="0">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="input-group">
+                  <label for="bbs-log-reps">Reps</label>
+                  <input type="number" id="bbs-log-reps" class="form-input" placeholder="e.g. 6" min="0">
+                </div>
+                <div class="input-group">
+                  <label for="bbs-log-notes">Notes</label>
+                  <input type="text" id="bbs-log-notes" class="form-input" placeholder="e.g. Seat setup">
+                </div>
+              </div>
+              <button class="btn btn-cyan btn-full" id="btn-bbs-log-save">
+                <i data-lucide="save"></i> Record Set to Log
+              </button>
+            </div>
+          </div>
+
+          <!-- Exercise History Panel -->
+          <div class="glass-panel exercise-history-panel">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="history"></i> Heavy Duty Lift History</h2>
+              <button class="btn btn-outline btn-xs" id="btn-bbs-add-custom">
+                <i data-lucide="plus"></i> Custom Exercise
+              </button>
+            </div>
+            <div class="history-list-wrapper">
+              <table class="data-table" id="bbs-history-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Exercise</th>
+                    <th>Weight</th>
+                    <th>TUL</th>
+                    <th>Effort Score</th>
+                    <th>Progression Info</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="bbs-history-tbody">
+                  <!-- Dynamically populated -->
+                  <tr>
+                    <td colspan="7" class="text-center text-secondary">No lifts recorded yet. Run a session above!</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. MEDITATION TAB -->
+      <section id="tab-meditation" class="tab-pane">
+        <div class="meditation-dashboard">
+          <!-- Active Meditation Session -->
+          <div class="glass-panel meditation-timer-panel">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="peace"></i> Mindfulness Space</h2>
+            </div>
+            
+            <div class="meditation-setup">
+              <span class="section-sub">Choose duration</span>
+              <div class="preset-duration-grid">
+                <button class="btn btn-outline active" data-med-duration="5">5 min</button>
+                <button class="btn btn-outline" data-med-duration="10">10 min</button>
+                <button class="btn btn-outline" data-med-duration="15">15 min</button>
+                <button class="btn btn-outline" data-med-duration="20">20 min</button>
+                <button class="btn btn-outline" data-med-duration="open">Open Ended</button>
+              </div>
+            </div>
+
+            <!-- Breathing Visualizer Orb -->
+            <div class="breath-visualizer-container">
+              <div class="breath-ring-outer"></div>
+              <div class="breath-ring-middle"></div>
+              <div class="breath-ring-inner">
+                <div class="breath-orb">
+                  <div class="orb-timer" id="med-timer-val">05:00</div>
+                  <div class="orb-instruction" id="breath-guide-text">Breathing Guide</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Timer controls -->
+            <div class="timer-controls">
+              <button class="btn btn-emerald btn-lg" id="btn-med-timer-toggle">
+                <i data-lucide="play"></i> Start Session
+              </button>
+              <button class="btn btn-secondary btn-icon" id="btn-med-timer-reset" disabled>
+                <i data-lucide="rotate-ccw"></i>
+              </button>
+            </div>
+
+            <div class="timer-settings-row centered">
+              <label class="toggle-switch">
+                <input type="checkbox" id="chk-med-pacer" checked>
+                <span class="slider"></span>
+                <span class="toggle-label">Breathing Circle Guide</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Log Session Details (Modal or Slide down on session end) -->
+          <div class="glass-panel meditation-log-panel" id="meditation-log-form-panel">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="heart"></i> Log Meditation</h2>
+            </div>
+            <div class="meditation-form">
+              <div class="form-row">
+                <div class="input-group">
+                  <label for="med-log-duration">Duration Completed (min)</label>
+                  <input type="number" id="med-log-duration" class="form-input" min="1" step="1" value="5">
+                </div>
+                <div class="input-group">
+                  <label for="med-log-focus">Mind Focus / Quality</label>
+                  <div class="rating-stars-input" id="med-log-focus-stars">
+                    <span class="star" data-rating="1">★</span>
+                    <span class="star" data-rating="2">★</span>
+                    <span class="star" data-rating="3">★</span>
+                    <span class="star" data-rating="4">★</span>
+                    <span class="star" data-rating="5">★</span>
+                  </div>
+                  <input type="hidden" id="med-log-focus" value="3">
+                </div>
+              </div>
+              <div class="input-group">
+                <label for="med-log-notes">Reflection / Notes</label>
+                <textarea id="med-log-notes" class="form-input form-textarea" placeholder="How did it feel? E.g., restless mind, deep calm, relaxed breathing..."></textarea>
+              </div>
+              <button class="btn btn-emerald btn-full" id="btn-med-log-save">
+                <i data-lucide="check-circle"></i> Save Session
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Meditation History -->
+        <div class="glass-panel meditation-history-section">
+          <div class="panel-header">
+            <h2 class="panel-title"><i data-lucide="list"></i> Meditation History</h2>
+          </div>
+          <div class="history-list-wrapper">
+            <table class="data-table" id="med-history-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Duration</th>
+                  <th>Focus Quality</th>
+                  <th>Notes</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="med-history-tbody">
+                <tr>
+                  <td colspan="5" class="text-center text-secondary">No meditation logs saved yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. PELOTON TAB -->
+      <section id="tab-peloton" class="tab-pane">
+        <div class="peloton-dashboard">
+          
+          <!-- Logging Form -->
+          <div class="glass-panel peloton-log-panel">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="plus-circle"></i> Log Peloton Class</h2>
+            </div>
+            
+            <form id="peloton-log-form" class="peloton-form">
+              <div class="form-row three-cols">
+                <div class="input-group">
+                  <label for="pelo-class-type">Class Type</label>
+                  <select id="pelo-class-type" class="form-select" required>
+                    <option value="Cycling">Cycling</option>
+                    <option value="Strength">Strength</option>
+                    <option value="Yoga">Yoga</option>
+                    <option value="Tread">Tread</option>
+                    <option value="Cardio">Cardio</option>
+                    <option value="Stretching">Stretching</option>
+                  </select>
+                </div>
+                <div class="input-group">
+                  <label for="pelo-instructor">Instructor</label>
+                  <input type="text" id="pelo-instructor" class="form-input" placeholder="e.g. Robin Arzon" required>
+                </div>
+                <div class="input-group">
+                  <label for="pelo-duration">Duration (min)</label>
+                  <select id="pelo-duration" class="form-select" required>
+                    <option value="5">5 Min</option>
+                    <option value="10">10 Min</option>
+                    <option value="15">15 Min</option>
+                    <option value="20" selected>20 Min</option>
+                    <option value="30">30 Min</option>
+                    <option value="45">45 Min</option>
+                    <option value="60">60 Min</option>
+                    <option value="75">75 Min</option>
+                    <option value="90">90 Min</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row three-cols">
+                <div class="input-group">
+                  <label for="pelo-output">Total Output (kJ)</label>
+                  <input type="number" id="pelo-output" class="form-input" placeholder="e.g. 185" min="0" step="1" required>
+                </div>
+                <div class="input-group">
+                  <label for="pelo-avg-output">Avg Output (Watts)</label>
+                  <input type="number" id="pelo-avg-output" class="form-input" placeholder="e.g. 154" min="0" step="1">
+                </div>
+                <div class="input-group flex-row">
+                  <div class="input-group-half">
+                    <label for="pelo-avg-cadence">Avg Cadence</label>
+                    <input type="number" id="pelo-avg-cadence" class="form-input" placeholder="RPM" min="0">
+                  </div>
+                  <div class="input-group-half">
+                    <label for="pelo-avg-res">Avg Res</label>
+                    <input type="number" id="pelo-avg-res" class="form-input" placeholder="%" min="0" max="100">
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="input-group">
+                  <label for="pelo-date">Date</label>
+                  <input type="date" id="pelo-date" class="form-input" required>
+                </div>
+                <div class="input-group">
+                  <label for="pelo-notes">Class Notes</label>
+                  <input type="text" id="pelo-notes" class="form-input" placeholder="e.g., HIIT & Hills, energetic playlist, felt strong">
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-rose btn-full">
+                <i data-lucide="check"></i> Save Peloton Class
+              </button>
+            </form>
+          </div>
+
+          <!-- PR Vault Summary (Comprehensive) -->
+          <div class="glass-panel peloton-vault-panel">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="medal"></i> Personal Record Vault</h2>
+            </div>
+            <div class="pr-grid" id="peloton-full-pr-grid">
+              <!-- PR grid cells will render dynamically -->
+              <div class="empty-state-mini">No classes recorded yet. Log your first class to set a PR!</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- History Log -->
+        <div class="glass-panel peloton-history-section">
+          <div class="panel-header">
+            <h2 class="panel-title"><i data-lucide="list"></i> Peloton Class History</h2>
+          </div>
+          <div class="history-list-wrapper">
+            <table class="data-table" id="pelo-history-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Type & Instructor</th>
+                  <th>Duration</th>
+                  <th>Total Output</th>
+                  <th>Avg Metrics</th>
+                  <th>Notes</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="pelo-history-tbody">
+                <tr>
+                  <td colspan="7" class="text-center text-secondary">No classes logged yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. ANALYTICS TAB -->
+      <section id="tab-analytics" class="tab-pane">
+        <div class="analytics-sub-tabs">
+          <button class="analytics-tab-btn active" data-chart-view="bbs">Heavy Duty Strength Progress</button>
+          <button class="analytics-tab-btn" data-chart-view="peloton">Peloton Cardio Trends</button>
+          <button class="analytics-tab-btn" data-chart-view="meditation">Meditation Consistency</button>
+        </div>
+
+        <!-- Chart Panels -->
+        <div class="glass-panel chart-container-panel" id="chart-panel-bbs">
+          <div class="panel-header">
+            <h2 class="panel-title"><i data-lucide="bar-chart-2"></i> Effort Score & Strength Progression</h2>
+            <div class="input-group-inline">
+              <label for="chart-bbs-exercise">Filter Exercise:</label>
+              <select id="chart-bbs-exercise" class="form-select select-xs">
+                <option value="Chest Press">Chest Press</option>
+                <option value="Lat Pulldown">Lat Pulldown</option>
+                <option value="Overhead Press">Overhead Press</option>
+                <option value="Seated Row">Seated Row</option>
+                <option value="Leg Press">Leg Press</option>
+              </select>
+            </div>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="bbsChart"></canvas>
+          </div>
+          <div class="chart-legend-info">
+            <p class="text-secondary text-sm">
+              <i data-lucide="info" class="icon-inline"></i> Effort Score = TUL × Weight — your best single measure of total strength for the lift. Rising effort score over time = rising total strength. Weight and TUL are shown below in the table. TUL is a failure signal, not the target -- overload only when you reached failure in the 40-90s window. We never deload just because TUL was under 80s.
+            </p>
+          </div>
+        </div>
+
+        <div class="glass-panel chart-container-panel hidden" id="chart-panel-peloton">
+          <div class="panel-header">
+            <h2 class="panel-title"><i data-lucide="activity"></i> Peloton Output Trends</h2>
+            <div class="input-group-inline">
+              <label for="chart-pelo-duration">Filter Duration:</label>
+              <select id="chart-pelo-duration" class="form-select select-xs">
+                <option value="all">All Durations</option>
+                <option value="15">15 Min</option>
+                <option value="20" selected>20 Min</option>
+                <option value="30">30 Min</option>
+                <option value="45">45 Min</option>
+              </select>
+            </div>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="pelotonChart"></canvas>
+          </div>
+          <div class="chart-legend-info">
+            <p class="text-secondary text-sm">
+              <i data-lucide="info" class="icon-inline"></i> Tracks <strong>Total Output (kJ)</strong> per class over time. The dashed line displays your <strong>Personal Record (PR)</strong> for the selected duration.
+            </p>
+          </div>
+        </div>
+
+        <div class="glass-panel chart-container-panel hidden" id="chart-panel-meditation">
+          <div class="panel-header">
+            <h2 class="panel-title"><i data-lucide="sparkles"></i> Meditation Mindfulness Frequency</h2>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="meditationChart"></canvas>
+          </div>
+          <div class="chart-legend-info">
+            <p class="text-secondary text-sm">
+              <i data-lucide="info" class="icon-inline"></i> Bars display <strong>Session Minutes</strong> per day. Line tracks your cumulative mindfulness time.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. SETTINGS TAB -->
+      <section id="tab-settings" class="tab-pane">
+        <div class="settings-grid">
+          
+          <!-- Data management -->
+          <div class="glass-panel">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="database"></i> Backup & Restore</h2>
+            </div>
+            <p class="panel-desc">Export your workouts, weights, and meditation logs as a backup, or import them into another device. All data stays local to your browser.</p>
+            <div class="settings-actions">
+              <button class="btn btn-outline btn-full" id="btn-export-data">
+                <i data-lucide="download"></i> Export Data (JSON)
+              </button>
+              <div class="file-upload-wrapper">
+                <label for="import-file" class="btn btn-outline btn-full">
+                  <i data-lucide="upload"></i> Import Data (JSON)
+                </label>
+                <input type="file" id="import-file" accept=".json" class="hidden-file-input">
+              </div>
+            </div>
+          </div>
+
+          <!-- App Installation (PWA) -->
+          <div class="glass-panel" id="pwa-install-panel">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="smartphone"></i> App Installation</h2>
+            </div>
+            <p class="panel-desc" id="pwa-status-text">Install AuraFit onto your device for a fast, standalone fullscreen experience and offline support.</p>
+            <div class="settings-actions">
+              <button class="btn btn-cyan btn-full" id="btn-settings-install" disabled>
+                <i data-lucide="download"></i> Install Application
+              </button>
+            </div>
+          </div>
+
+          <!-- Build Info -->
+          <div class="glass-panel">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="info"></i> Build Information</h2>
+            </div>
+            <p class="panel-desc">App version and build details for tracking deployments.</p>
+            <div class="settings-actions">
+              <div class="build-info-display" id="settings-build-info" style="font:600 13px/1.6 monospace;color:var(--text-secondary);background:rgba(6,182,212,0.08);border-radius:8px;padding:12px;text-align:center;">
+                <span id="settings-build-version">Loading...</span><br>
+                <span id="settings-build-stamp" style="font-size:11px;opacity:0.7;"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sandbox and Demo Tools -->
+          <div class="glass-panel">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="flask-conical"></i> Sandbox & Development</h2>
+            </div>
+            <p class="panel-desc">Quickly test the fitness tracker with pre-populated values to view analytics and progress advice, or clear the storage.</p>
+            <div class="settings-actions">
+              <button class="btn btn-cyan btn-full" id="btn-load-sample">
+                <i data-lucide="refresh-cw"></i> Load 60-Day Sample Data
+              </button>
+              <button class="btn btn-outline btn-full" id="btn-load-appsheet">
+                <i data-lucide="upload-cloud"></i> Load AppSheet Historical Logs
+              </button>
+              <button class="btn btn-danger btn-full" id="btn-clear-db">
+                <i data-lucide="trash-2"></i> Factory Reset (Clear All)
+              </button>
+            </div>
+          </div>
+
+          <!-- BBS Cadence Settings -->
+          <div class="glass-panel">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="timer"></i> Heavy Duty Cadence Settings</h2>
+            </div>
+            <p class="panel-desc">Configure the lift pacing cadence. Defaults to 5s up and 5s down (slow, controlled reps to failure). This affects the audio ticks and pacing visualizer.</p>
+            <div class="settings-actions">
+              <div class="form-row">
+                <div class="input-group">
+                  <label for="settings-cadence-up">Concentric (Up)</label>
+                  <input type="number" id="settings-cadence-up" class="form-input" min="1" max="30" value="5">
+                </div>
+                <div class="input-group">
+                  <label for="settings-cadence-down">Eccentric (Down)</label>
+                  <input type="number" id="settings-cadence-down" class="form-input" min="1" max="30" value="5">
+                </div>
+              </div>
+              <button class="btn btn-cyan btn-full" id="btn-save-cadence">
+                <i data-lucide="save"></i> Save Cadence
+              </button>
+            </div>
+          </div>
+
+          <!-- BBS Exercises List Customization -->
+          <div class="glass-panel span-2-cols">
+            <div class="panel-header">
+              <h2 class="panel-title"><i data-lucide="edit-3"></i> Heavy Duty Exercise Catalog</h2>
+            </div>
+            <p class="panel-desc">Manage the exercises tracked under the Mike Mentzer Heavy Duty protocol. Adding or removing exercises updates the selectors in the weightlifting and analytics logs.</p>
+            <div class="exercise-editor-wrapper">
+              <div class="add-exercise-form">
+                <input type="text" id="new-bbs-exercise-name" class="form-input" placeholder="e.g. Bicep Curl or Leg Press Variation">
+                <button class="btn btn-cyan" id="btn-add-bbs-catalog-item">
+                  <i data-lucide="plus"></i> Add
+                </button>
+              </div>
+              <ul class="exercise-list-group" id="bbs-exercise-custom-list">
+                <!-- Dynamically populated -->
+              </ul>
+            </div>
+          </div>
+          
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Bottom Navigation Bar (Mobile / Responsive) -->
+    <nav class="bottom-nav">
+      <a href="#dashboard" class="bottom-nav-item active" data-tab="dashboard">
+        <i data-lucide="layout-dashboard"></i>
+        <span>Dash</span>
+      </a>
+      <a href="#bbs" class="bottom-nav-item" data-tab="bbs">
+        <i data-lucide="dumbbell"></i>
+        <span>Lifts</span>
+      </a>
+      <a href="#meditation" class="bottom-nav-item" data-tab="meditation">
+        <i data-lucide="flower"></i>
+        <span>Zen</span>
+      </a>
+      <a href="#peloton" class="bottom-nav-item" data-tab="peloton">
+        <i data-lucide="bike"></i>
+        <span>Pelo</span>
+      </a>
+      <a href="#analytics" class="bottom-nav-item" data-tab="analytics">
+        <i data-lucide="trending-up"></i>
+        <span>Stats</span>
+      </a>
+      <a href="#settings" class="bottom-nav-item" data-tab="settings">
+        <i data-lucide="settings"></i>
+        <span>Set</span>
+      </a>
+    </nav>
+
+  </div>
+
+  <!-- Custom Exercise Dialog Modal -->
+  <div class="modal" id="custom-exercise-modal">
+    <div class="modal-content glass-panel">
+      <div class="modal-header">
+        <h3>Create Custom Exercise</h3>
+        <button class="btn-close-modal" id="btn-close-modal-x">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="input-group">
+          <label for="modal-exercise-name">Exercise Name</label>
+          <input type="text" id="modal-exercise-name" class="form-input" placeholder="e.g. Incline Bench Press">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btn-close-modal-cancel">Cancel</button>
+        <button class="btn btn-cyan" id="btn-close-modal-save">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Application Logic -->
+  <script src="assets/app.js"></script>
+</body>
+</html>
